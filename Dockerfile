@@ -26,4 +26,5 @@ RUN npm install
 # 3. Copy the rest of your application source code
 COPY . .
 
-CMD ["node", "src/server.js"]
+# Clean up any stale chromium lock files on startup
+CMD rm -rf /tmp/chrome-profile-* && node src/server.js
