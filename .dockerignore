@@ -16,3 +16,4 @@ session
 .DS_Store
 coverage
 .cache
+.wwebjs_cache

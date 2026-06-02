@@ -1,0 +1,12 @@
+services:
+  tanumsgfowarder:
+    image: ghcr.io/hariomop12/tanumsgfowarder:latest
+    container_name: tanumsgfowarder
+    env_file:
+      - .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
