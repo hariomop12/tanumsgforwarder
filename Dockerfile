@@ -27,4 +27,4 @@ RUN npm install
 COPY . .
 
 # Clean up any stale chromium lock files on startup
-CMD rm -rf /tmp/chrome-profile-* && node src/server.js
+CMD rm -rf /tmp/SingletonLock /tmp/.org.chromium* /root/.config/chromium && node src/server.js

@@ -9,7 +9,6 @@ const client7493 = new Client({
   puppeteer: {
     executablePath: process.env.CHROME_PATH,
     headless: true,
-    userDataDir: "/tmp/chrome-profile-bot7493",
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
