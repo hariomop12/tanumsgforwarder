@@ -1,19 +1,17 @@
 FROM node:18
 
-# Install system dependencies for Chromium
-RUN apt-get update && apt-get install -y \
-  chromium \
+# Install Google Chrome Stable (more reliable than distro chromium)
+RUN apt-get update && apt-get install -y wget gnupg ca-certificates \
+  && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
+  && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+  && apt-get update && apt-get install -y \
+  google-chrome-stable \
   fonts-liberation \
-  libnss3 \
-  libatk-bridge2.0-0 \
-  libgtk-3-0 \
-  libx11-xcb1 \
-  libasound2 \
   && rm -rf /var/lib/apt/lists/*
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
-ENV CHROME_PATH=/usr/bin/chromium
-ENV PUPPETEER_ARGS="--no-sandbox --disable-setuid-sandbox"
+ENV CHROME_PATH=/usr/bin/google-chrome-stable
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
 WORKDIR /app
 

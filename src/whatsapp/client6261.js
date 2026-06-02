@@ -1,13 +1,26 @@
+import { existsSync } from "fs";
 import pkg from "whatsapp-web.js";
 
 const { Client, LocalAuth } = pkg;
+
+const CHROME_PATHS = [
+  process.env.CHROME_PATH,
+  process.env.PUPPETEER_EXECUTABLE_PATH,
+  "/usr/bin/google-chrome-stable",
+  "/usr/bin/google-chrome",
+  "/usr/bin/chromium-browser",
+  "/usr/bin/chromium",
+  "/usr/bin/chrome",
+].filter(Boolean);
+
+const executablePath = CHROME_PATHS.find((p) => existsSync(p));
 
 const client6261 = new Client({
   authStrategy: new LocalAuth({
     clientId: "bot6261",
   }),
   puppeteer: {
-    executablePath: process.env.CHROME_PATH,
+    executablePath,
     headless: true,
     args: [
       "--no-sandbox",
