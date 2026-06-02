@@ -9,6 +9,7 @@ const client6261 = new Client({
   puppeteer: {
     executablePath: process.env.CHROME_PATH,
     headless: true,
+    userDataDir: "/tmp/chrome-bot6261",
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -18,7 +19,8 @@ const client6261 = new Client({
       "--disable-extensions",
       "--disable-default-apps",
       "--disable-preconnect",
-      "--single-process",
+      "--disable-sync",
+      "--disable-component-updates",
     ],
   },
 });
