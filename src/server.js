@@ -1,8 +1,17 @@
 import "dotenv/config";
+import express from "express";
 import qrcode from "qrcode-terminal";
 
 import client6261 from "./whatsapp/client6261.js";
 import client7493 from "./whatsapp/client7493.js";
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get("/", (_req, res) => res.send("OK"));
+app.get("/health", (_req, res) => res.send("OK"));
+
+app.listen(PORT, () => console.log(`Health server on ${PORT}`));
 
 const ALLOWED_GROUPS = [
   process.env.ALLOWED_GROUP_1,
