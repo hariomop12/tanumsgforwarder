@@ -4,11 +4,11 @@ import pkg from "whatsapp-web.js";
 const { Client, LocalAuth } = pkg;
 
 const CHROME_PATHS = [
-  process.env.CHROME_PATH,
   process.env.PUPPETEER_EXECUTABLE_PATH,
+  process.env.CHROME_PATH,
+  "/usr/bin/chromium-browser",
   "/usr/bin/google-chrome-stable",
   "/usr/bin/google-chrome",
-  "/usr/bin/chromium-browser",
   "/usr/bin/chromium",
   "/usr/bin/chrome",
 ].filter(Boolean);
