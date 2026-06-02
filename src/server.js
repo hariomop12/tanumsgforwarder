@@ -1,5 +1,7 @@
 import "dotenv/config";
 import express from "express";
+import { writeFileSync } from "fs";
+import { toFile } from "qrcode";
 import qrcode from "qrcode-terminal";
 
 import client6261 from "./whatsapp/client6261.js";
@@ -7,6 +9,8 @@ import client7493 from "./whatsapp/client7493.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const BASE = process.env.SEVALLA_URL || "";
 
 app.get("/", (_req, res) => res.send("OK"));
 app.get("/health", (_req, res) => res.send("OK"));
@@ -25,14 +29,26 @@ const NUMBER_7942 = process.env.NUMBER_7942;
 /**
  * QR Events
  */
+const qrPng = (name, qr) => {
+  toFile(`/tmp/qr-${name}.png`, qr).then(() => {
+    console.log(`SCAN QR FOR ${name}: ${BASE}/qr/${name}`);
+  });
+};
+
 client6261.on("qr", (qr) => {
-  console.log("\nSCAN QR FOR 6261\n");
+  qrPng("6261", qr);
   qrcode.generate(qr, { small: true });
 });
 
 client7493.on("qr", (qr) => {
-  console.log("\nSCAN QR FOR 7493\n");
+  qrPng("7493", qr);
   qrcode.generate(qr, { small: true });
+});
+
+app.get("/qr/:name", (req, res) => {
+  res.sendFile(`/tmp/qr-${req.params.name}.png`, (err) => {
+    if (err) res.status(404).send("QR not generated yet");
+  });
 });
 
 /**
