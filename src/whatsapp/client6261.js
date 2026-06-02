@@ -13,6 +13,12 @@ const client6261 = new Client({
       "--no-sandbox",
       "--disable-setuid-sandbox",
       "--disable-dev-shm-usage",
+      "--disable-gpu",
+      "--disable-web-resources",
+      "--disable-extensions",
+      "--disable-default-apps",
+      "--disable-preconnect",
+      "--single-process",
     ],
   },
 });
