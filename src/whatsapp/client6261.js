@@ -7,7 +7,7 @@ const client6261 = new Client({
     clientId: "bot6261",
   }),
   puppeteer: {
-    executablePath: "/usr/bin/chromium",
+    executablePath: process.env.CHROME_PATH,
     headless: true,
     args: [
       "--no-sandbox",

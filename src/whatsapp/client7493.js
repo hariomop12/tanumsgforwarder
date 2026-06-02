@@ -7,7 +7,7 @@ const client7493 = new Client({
     clientId: "relay7493",
   }),
   puppeteer: {
-    executablePath: "/usr/bin/chromium",
+    executablePath: process.env.CHROME_PATH,
     headless: true,
     args: [
       "--no-sandbox",
