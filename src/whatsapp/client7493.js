@@ -23,6 +23,10 @@ const client7493 = new Client({
       "--no-service-autorun",
       "--metrics-recording-only",
       "--safebrowsing-disable-auto-update",
+      "--disable-background-networking",
+      "--disable-client-side-phishing-detection",
+      "--no-first-run",
+      "--no-pings",
     ],
   },
 });

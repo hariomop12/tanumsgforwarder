@@ -26,5 +26,5 @@ RUN npm install
 # 3. Copy the rest of your application source code
 COPY . .
 
-# Clean up any stale chromium lock files on startup
-CMD rm -rf /tmp/SingletonLock /tmp/.org.chromium* /root/.config/chromium && node src/server.js
+# Clean up stale chromium files and start
+CMD sh -c 'rm -rf /tmp/SingletonLock /tmp/.org.chromium* /root/.config/chromium /root/.wwebjs_auth/* 2>/dev/null; sleep 2; node src/server.js'
