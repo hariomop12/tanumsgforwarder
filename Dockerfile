@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV CHROME_PATH=/usr/bin/chromium
+ENV PUPPETEER_ARGS="--no-sandbox --disable-setuid-sandbox"
 
 WORKDIR /app
 
