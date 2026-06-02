@@ -26,5 +26,8 @@ RUN npm install
 # 3. Copy the rest of your application source code
 COPY . .
 
-# Clean up stale chromium files and start
-CMD sh -c 'rm -rf /tmp/SingletonLock /tmp/.org.chromium* /root/.config/chromium /root/.wwebjs_auth/* 2>/dev/null; sleep 2; node src/server.js'
+# Copy entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]
