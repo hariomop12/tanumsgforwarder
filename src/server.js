@@ -26,6 +26,14 @@ const ALLOWED_GROUPS = [
 const NUMBER_7493 = process.env.NUMBER_7493?.trim();
 const NUMBER_7942 = process.env.NUMBER_7942?.trim();
 
+const processedIds = new Set();
+const DEDUP_CLEAN_INTERVAL = 60_000;
+const DEDUP_MAX_AGE = 120_000;
+
+setInterval(() => {
+  if (processedIds.size > 10000) processedIds.clear();
+}, DEDUP_CLEAN_INTERVAL);
+
 /**
  * QR Events
  */
@@ -91,9 +99,10 @@ setInterval(() => {
  */
 client6261.on("message_create", async (msg) => {
   try {
-    if (msg.fromMe) {
-      return;
-    }
+    if (msg.fromMe) return;
+
+    if (processedIds.has(msg.id.id)) return;
+    processedIds.add(msg.id.id);
 
     const groupId = msg.from;
     const isAllowed = ALLOWED_GROUPS.includes(groupId);
@@ -131,9 +140,10 @@ client6261.on("message_create", async (msg) => {
  */
 client7493.on("message_create", async (msg) => {
   try {
-    if (msg.fromMe) {
-      return;
-    }
+    if (msg.fromMe) return;
+
+    if (processedIds.has(msg.id.id)) return;
+    processedIds.add(msg.id.id);
 
     console.log(`[7493] "${msg.from}" -> FORWARDING TO ${NUMBER_7942} body="${msg.body?.slice(0,80)}"`);
 
