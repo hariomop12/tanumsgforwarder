@@ -28,11 +28,12 @@ const NUMBER_7942 = process.env.NUMBER_7942?.trim();
 
 const processedIds = new Set();
 const DEDUP_CLEAN_INTERVAL = 60_000;
-const DEDUP_MAX_AGE = 120_000;
 
 setInterval(() => {
   if (processedIds.size > 10000) processedIds.clear();
 }, DEDUP_CLEAN_INTERVAL);
+
+let client6261Number = null;
 
 /**
  * QR Events
@@ -65,7 +66,10 @@ app.get("/qr/:name", (req, res) => {
  * Ready Events
  */
 client6261.on("ready", () => {
-  console.log("6261 READY - waiting for messages...");
+  client6261Number = client6261.info?.wid?.user
+    ? `${client6261.info.wid.user}@${client6261.info.wid.server}`
+    : null;
+  console.log(`6261 READY - number=${client6261Number}`);
 });
 
 client6261.on("disconnected", (reason) => {
@@ -136,7 +140,8 @@ client6261.on("message_create", async (msg) => {
 /**
  * BOT 2
  * 7493 Inbox -> 7942
- * Using message_create because `message` event doesn't fire for LID-format contacts
+ * Only forwards messages that came FROM client6261 (forwarded group messages).
+ * Direct messages to 7493 are ignored to prevent echo to sender.
  */
 client7493.on("message_create", async (msg) => {
   try {
@@ -144,6 +149,10 @@ client7493.on("message_create", async (msg) => {
 
     if (processedIds.has(msg.id.id)) return;
     processedIds.add(msg.id.id);
+
+    if (client6261Number && msg.from !== client6261Number) {
+      return;
+    }
 
     console.log(`[7493] "${msg.from}" -> FORWARDING TO ${NUMBER_7942} body="${msg.body?.slice(0,80)}"`);
 
