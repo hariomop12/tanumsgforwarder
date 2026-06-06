@@ -1,6 +1,5 @@
 import "dotenv/config";
 import express from "express";
-import { writeFileSync } from "fs";
 import { toFile } from "qrcode";
 import qrcode from "qrcode-terminal";
 
@@ -9,12 +8,10 @@ import client7493 from "./whatsapp/client7493.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
 const BASE = process.env.SEVALLA_URL || "";
 
 app.get("/", (_req, res) => res.send("OK"));
 app.get("/health", (_req, res) => res.send("OK"));
-
 app.listen(PORT, () => console.log(`Health server on ${PORT}`));
 
 const ALLOWED_GROUPS = [
@@ -26,18 +23,13 @@ const ALLOWED_GROUPS = [
 const NUMBER_7493 = process.env.NUMBER_7493?.trim();
 const NUMBER_7942 = process.env.NUMBER_7942?.trim();
 
-const processedIds = new Set();
-const DEDUP_CLEAN_INTERVAL = 60_000;
+console.log("CONFIG:", { ALLOWED_GROUPS, NUMBER_7493, NUMBER_7942 });
 
+const processedIds = new Set();
 setInterval(() => {
   if (processedIds.size > 10000) processedIds.clear();
-}, DEDUP_CLEAN_INTERVAL);
+}, 60000);
 
-let client6261Number = null;
-
-/**
- * QR Events
- */
 const qrPng = (name, qr) => {
   toFile(`/tmp/qr-${name}.png`, qr).then(() => {
     console.log(`SCAN QR FOR ${name}: ${BASE}/qr/${name}`);
@@ -62,14 +54,8 @@ app.get("/qr/:name", (req, res) => {
   });
 });
 
-/**
- * Ready Events
- */
 client6261.on("ready", () => {
-  client6261Number = client6261.info?.wid?.user
-    ? `${client6261.info.wid.user}@${client6261.info.wid.server}`
-    : null;
-  console.log(`6261 READY - number=${client6261Number}`);
+  console.log("6261 READY");
 });
 
 client6261.on("disconnected", (reason) => {
@@ -81,7 +67,7 @@ client6261.on("auth_failure", (msg) => {
 });
 
 client7493.on("ready", () => {
-  console.log("7493 READY - waiting for messages...");
+  console.log("7493 READY");
 });
 
 client7493.on("disconnected", (reason) => {
@@ -93,86 +79,52 @@ client7493.on("auth_failure", (msg) => {
 });
 
 setInterval(() => {
-  console.log(`[HEARTBEAT] 6261=${client6261.info?.pushname || "unknown"} 7493=${client7493.info?.pushname || "unknown"}`);
+  console.log(`[HEARTBEAT] 6261=${client6261.info?.pushname || "?"} 7493=${client7493.info?.pushname || "?"}`);
 }, 120000);
 
-/**
- * BOT 1
- * Groups -> 7493
- * Using message_create because `message` event doesn't fire for LID-format contacts
- */
 client6261.on("message_create", async (msg) => {
   try {
     if (msg.fromMe) return;
-
-    if (processedIds.has(msg.id.id)) return;
+    if (!msg.id?.id || processedIds.has(msg.id.id)) return;
     processedIds.add(msg.id.id);
 
-    const groupId = msg.from;
-    const isAllowed = ALLOWED_GROUPS.includes(groupId);
+    if (!ALLOWED_GROUPS.includes(msg.from)) return;
 
-    if (!isAllowed) {
-      return;
-    }
-
-    console.log(`[6261] GROUP "${groupId}" -> FORWARDING TO ${NUMBER_7493} body="${msg.body?.slice(0,80)}"`);
+    console.log(`[6261] GROUP -> ${NUMBER_7493} body="${msg.body?.slice(0, 80)}"`);
 
     if (msg.hasMedia) {
       const media = await msg.downloadMedia();
-
       if (media) {
-        await client6261.sendMessage(NUMBER_7493, media, {
-          caption: msg.body || "",
-        });
-        console.log(`[6261] MEDIA FORWARDED`);
+        await client6261.sendMessage(NUMBER_7493, media, { caption: msg.body || "" });
       }
-
       return;
     }
 
-    const sent = await client6261.sendMessage(NUMBER_7493, msg.body || "");
-    console.log(`[6261] FORWARDED id=${sent.id?.id}`);
+    await client6261.sendMessage(NUMBER_7493, msg.body || "");
   } catch (err) {
-    console.error("[6261] RELAY ERROR", err);
+    console.error("[6261] ERROR", err);
   }
 });
 
-/**
- * BOT 2
- * 7493 Inbox -> 7942
- * Only forwards messages that came FROM client6261 (forwarded group messages).
- * Direct messages to 7493 are ignored to prevent echo to sender.
- */
 client7493.on("message_create", async (msg) => {
   try {
     if (msg.fromMe) return;
-
-    if (processedIds.has(msg.id.id)) return;
+    if (!msg.id?.id || processedIds.has(msg.id.id)) return;
     processedIds.add(msg.id.id);
 
-    if (client6261Number && msg.from !== client6261Number) {
-      return;
-    }
-
-    console.log(`[7493] "${msg.from}" -> FORWARDING TO ${NUMBER_7942} body="${msg.body?.slice(0,80)}"`);
+    console.log(`[7493] "${msg.from}" -> ${NUMBER_7942} body="${msg.body?.slice(0, 80)}"`);
 
     if (msg.hasMedia) {
       const media = await msg.downloadMedia();
-
       if (media) {
-        await client7493.sendMessage(NUMBER_7942, media, {
-          caption: msg.body || "",
-        });
-        console.log(`[7493] MEDIA FORWARDED`);
+        await client7493.sendMessage(NUMBER_7942, media, { caption: msg.body || "" });
       }
-
       return;
     }
 
-    const sent = await client7493.sendMessage(NUMBER_7942, msg.body || "");
-    console.log(`[7493] FORWARDED id=${sent.id?.id}`);
+    await client7493.sendMessage(NUMBER_7942, msg.body || "");
   } catch (err) {
-    console.error("[7493] RELAY ERROR", err);
+    console.error("[7493] ERROR", err);
   }
 });
 
